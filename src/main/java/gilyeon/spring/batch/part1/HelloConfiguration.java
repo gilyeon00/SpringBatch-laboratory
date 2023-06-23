@@ -2,8 +2,11 @@ package gilyeon.spring.batch.part1;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,9 +20,13 @@ public class HelloConfiguration {
         이 클래스는 Spring Batch 설정에 의해서, 이미 Bean 으로 설정되어 있기때문에 생성자 주입으로 받을 수 있음
      */
     private final JobBuilderFactory jobBuilderFactory;
+    private final StepBuilderFactory stepBuilderFactory;
 
-    public HelloConfiguration(JobBuilderFactory jobBuilderFactory){
+
+    public HelloConfiguration(JobBuilderFactory jobBuilderFactory,
+                              StepBuilderFactory stepBuilderFactory){
         this.jobBuilderFactory = jobBuilderFactory;
+        this.stepBuilderFactory = stepBuilderFactory;
     }
 
     /*
@@ -31,8 +38,22 @@ public class HelloConfiguration {
     public Job helloJob() {
         return jobBuilderFactory.get("helloJob")
                 .incrementer(new RunIdIncrementer())
-                .start()
+                .start(this.helloStep())
                 .build();
+    }
+
+    /*
+        step : job 의 실행 단위 (step 도 job 처럼 Bean 으로 만들어야한다)
+        하나의 job 은 하나 이상의 step 을 가진다
+        tasklet : step 의 실행 단위 (또 다른 단위로는 chunk 가 있음)
+     */
+    @Bean
+    public Step helloStep() {
+        return stepBuilderFactory.get("helloStep")
+                .tasklet((contribution, chunkContext) -> {
+                    log.info("hello spring batch");
+                    return RepeatStatus.FINISHED;
+                }).build();
     }
 
 
