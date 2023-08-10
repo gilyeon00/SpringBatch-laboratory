@@ -4,7 +4,7 @@ spring:
       jdbc-url: jdbc:mysql://localhost:3306/spring_batch?characterEncoding=UTF-8&serverTimezone=UTC
       driver-class-name: com.mysql.cj.jdbc.Driver
       username: root
-      password: 1208
+      password: 12081208
 
 batch:
   initialize-schema: never
