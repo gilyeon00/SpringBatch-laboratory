@@ -22,8 +22,8 @@ public class JobConfiguration {
 
     @Bean
     public Job job () {
-        return jobBuilderFactory.get("simple-job-2")
-                .incrementer(new RunIdIncrementer())
+        return jobBuilderFactory.get("simple-job-3")
+                .incrementer(new UniqueRunIdIncrementer())
                 .start(step1())
                 .next(step2())
                 .build();
