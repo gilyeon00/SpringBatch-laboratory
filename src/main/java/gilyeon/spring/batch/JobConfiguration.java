@@ -29,26 +29,32 @@ public class JobConfiguration {
         return jobBuilderFactory.get("my-job")
                 .start(step1())
                 .next(step2())
+                .next(step3())
+                .next(step4())
                 .build();
     }
-
     @Bean
     public Step step1 () {
         return stepBuilderFactory.get("step1")
-                .tasklet(new Tasklet() {
-                    @Override
-                    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-                        System.out.println("------step1 has executed------");
-                        return RepeatStatus.FINISHED;
-                    }
-                })
+                .tasklet(new ExecutionContext1())
                 .build();
     }
-
     @Bean
     public Step step2 () {
         return stepBuilderFactory.get("step2")
-                .tasklet(new CustomTasklet())
+                .tasklet(new ExecutionContext2())
+                .build();
+    }
+    @Bean
+    public Step step3 () {
+        return stepBuilderFactory.get("step3")
+                .tasklet(new ExecutionContext3())
+                .build();
+    }
+    @Bean
+    public Step step4 () {
+        return stepBuilderFactory.get("step4")
+                .tasklet(new ExecutionContext4())
                 .build();
     }
 
