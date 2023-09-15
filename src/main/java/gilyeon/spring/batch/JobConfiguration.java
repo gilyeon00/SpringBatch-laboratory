@@ -38,6 +38,7 @@ public class JobConfiguration {
                 .tasklet(new Tasklet() {
                     @Override
                     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+                        Thread.sleep(3000);
                         System.out.println("------step1 has executed------");
                         return RepeatStatus.FINISHED;
                     }

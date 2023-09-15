@@ -10,4 +10,4 @@ spring:
     job:
       enabled: false
     jdbc:
-      initialize-schema: never
+      initialize-schema: always
