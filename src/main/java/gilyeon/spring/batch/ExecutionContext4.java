@@ -9,6 +9,8 @@ public class ExecutionContext4 implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         System.out.println("=======execution context 4 ============");
-        return null;
+        System.out.println("name :  " + chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().get("name"));
+
+        return RepeatStatus.FINISHED;
     }
 }
