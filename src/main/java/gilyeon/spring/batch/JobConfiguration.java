@@ -29,6 +29,7 @@ public class JobConfiguration {
         return jobBuilderFactory.get("my-job")
                 .start(step1())
                 .next(step2())
+                .incrementer(new CustomJobParametersIncrementer())
                 .build();
     }
 
