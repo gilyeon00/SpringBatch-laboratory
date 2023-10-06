@@ -8,7 +8,9 @@ import org.springframework.batch.repeat.RepeatStatus;
 public class CustomTasklet implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-        System.out.println("====== custom step2 was executed =========");
+        String stepName = contribution.getStepExecution().getStepName();
+        String jobName = chunkContext.getStepContext().getStepExecution().getJobExecution().getJobInstance().getJobName();
+        System.out.println("stepName : " + stepName + ", jobName : " + jobName);
         return RepeatStatus.FINISHED;
     }
 }
