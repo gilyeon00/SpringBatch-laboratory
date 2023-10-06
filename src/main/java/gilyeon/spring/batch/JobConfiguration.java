@@ -5,9 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.item.*;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.step.job.DefaultJobParametersExtractor;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,30 +22,38 @@ public class JobConfiguration {
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
 
+
     @Bean
-    public Job job () {
-        return jobBuilderFactory.get("my-job")
-                .start(step1())
+    public Job parentJob() {
+        return jobBuilderFactory.get("parentJob")
+                .start(jobStep(null))
                 .next(step2())
-                .incrementer(new CustomJobParametersIncrementer())
+                .incrementer(new RunIdIncrementer())
                 .build();
     }
 
+    // ExecutionContext 에 있는 값을 key 를 통해 가져올 수 있음
+    private DefaultJobParametersExtractor myJobParametersExtractor() {
+        DefaultJobParametersExtractor extractor = new DefaultJobParametersExtractor();
+        extractor.setKeys(new String[]{"name"});
+        return extractor;
+    }
     @Bean
-    public Step step1 () {
-        return stepBuilderFactory.get("step1")
-                .tasklet(new Tasklet() {
-                    @Override
-                    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-                        return null;
-                    }
-                })
-                .startLimit(10)
-                .allowStartIfComplete(true)
+    public Step jobStep (JobLauncher jobLauncher) {
+        return stepBuilderFactory.get("my-jobStep")
+                .job(childJob())
+                .launcher(jobLauncher)
+//                .parametersExtractor(new JobParametersExtractor() {
+//                    @Override
+//                    public JobParameters getJobParameters(Job job, StepExecution stepExecution) {
+//                        return null;
+//                    }
+//                })
+                .parametersExtractor(myJobParametersExtractor())
                 .listener(new StepExecutionListener() {
                     @Override
                     public void beforeStep(StepExecution stepExecution) {
-
+                        stepExecution.getExecutionContext().putString("name", "user1");
                     }
 
                     @Override
@@ -57,27 +65,24 @@ public class JobConfiguration {
     }
 
     @Bean
+    public Job childJob() {
+        return jobBuilderFactory.get("childJob")
+                .start(step1())
+                .incrementer(new CustomJobParametersIncrementer())
+                .build();
+    }
+
+    @Bean
+    public Step step1 () {
+        return stepBuilderFactory.get("step1")
+                .tasklet(((contribution, chunkContext) -> RepeatStatus.FINISHED))
+                .build();
+    }
+
+    @Bean
     public Step step2 () {
         return stepBuilderFactory.get("step2")
-                .<String, String>chunk(3)
-                .reader(new ItemReader<String>() {
-                    @Override
-                    public String read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
-                        return null;
-                    }
-                })
-                .processor(new ItemProcessor<String, String>() {
-                    @Override
-                    public String process(String item) throws Exception {
-                        return null;
-                    }
-                })
-                .writer(new ItemWriter<String>() {
-                    @Override
-                    public void write(List<? extends String> items) throws Exception {
-
-                    }
-                })
+                .tasklet(((contribution, chunkContext) -> RepeatStatus.FINISHED))
                 .build();
     }
 

@@ -13,10 +13,10 @@ public class CustomJobParametersIncrementer implements JobParametersIncrementer 
     @Override
     public JobParameters getNext(JobParameters parameters) {
         String id = dateFormat.format(new Date());
-        String name = "jobjob";
+        String name = "jobjobA";
         return new JobParametersBuilder()
-                .addString("run.id", id)
-                .addString("name", name)
+                .addString("keyA", id)
+                .addString("nameA", name)
                 .toJobParameters();
 
     }
