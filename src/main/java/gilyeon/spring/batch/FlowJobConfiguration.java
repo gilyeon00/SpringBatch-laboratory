@@ -6,12 +6,15 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.concurrent.Flow;
 
 @Configuration
 @RequiredArgsConstructor
@@ -27,7 +30,22 @@ public class FlowJobConfiguration {
     public Job batchJob() {
         return jobBuilderFactory.get("batchJob")
                 .start(step1())
-                .on("COMPLETED").to(step2())
+                .on("COMPLETED")
+                .to(step2())
+                .from(step1())
+                .on("FAILED")
+                .to(step3())
+                .end()
+                .incrementer(new RunIdIncrementer())
+                .build();
+    }
+
+    @Bean
+    public Job batchFlows() {
+        return jobBuilderFactory.get("batchJob")
+                .start(step1())
+                .on("COMPLETED")
+                .to(step2())
                 .from(step1())
                 .on("FAILED").to(step3())
                 .end()
@@ -35,6 +53,14 @@ public class FlowJobConfiguration {
                 .build();
     }
 
+    @Bean
+    public Flow flowA() {
+        FlowBuilder<Flow> flowBuilder = new FlowBuilder<>("flowA");
+        flowBuilder.start(step1())
+                .next(step2())
+                .end();
+        return flowBuilder.build();
+    }
 
     @Bean
     public Step step1() {
