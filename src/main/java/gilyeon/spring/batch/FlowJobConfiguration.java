@@ -1,6 +1,7 @@
 package gilyeon.spring.batch;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepContribution;
@@ -22,7 +23,7 @@ public class FlowJobConfiguration {
 
     @Bean
     public Job myjob(){
-        return jobBuilderFactory.get("myjob")
+        return jobBuilderFactory.get("myjob2")
                 .start(step1())
                     .on("FAILED")
                     .to(step2())
@@ -40,7 +41,7 @@ public class FlowJobConfiguration {
                     @Override
                     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
                         System.out.println("==============step1 executed=============");
-                        FAIL
+                        contribution.setExitStatus(ExitStatus.FAILED);
                         return RepeatStatus.FINISHED;
                     }
                 })
