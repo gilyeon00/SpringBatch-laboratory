@@ -24,7 +24,7 @@ public class FlowJobConfiguration {
     private final StepBuilderFactory stepBuilderFactory;
 
     @Bean
-    public Job myjob(){
+    public Job flowJob(){
         return jobBuilderFactory.get("myFlowJob")
                 .start(myFlow1())
                 .on("COMPLETED").to(myFlow2())
@@ -46,8 +46,18 @@ public class FlowJobConfiguration {
     @Bean
     public Flow myFlow2(){
         FlowBuilder<Flow> flowBuilder = new FlowBuilder<>("myFlow2");
-        flowBuilder.start(step2())
-                .next(step1())
+        flowBuilder.start(myFlow3())
+                .next(step5())
+                .end();
+
+        return flowBuilder.build();
+    }
+
+    @Bean
+    public Flow myFlow3(){
+        FlowBuilder<Flow> flowBuilder = new FlowBuilder<>("myFlow2");
+        flowBuilder.start(step3())
+                .next(step4())
                 .end();
 
         return flowBuilder.build();
@@ -89,6 +99,33 @@ public class FlowJobConfiguration {
                     @Override
                     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
                         System.out.println("==============step3 executed=============");
+                        return RepeatStatus.FINISHED;
+                    }
+                })
+                .build();
+    }
+
+    @Bean
+    public Step step4(){
+        return stepBuilderFactory.get("step4")
+                .tasklet(new Tasklet() {
+                    @Override
+                    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+                        System.out.println("==============step4 executed=============");
+                        return RepeatStatus.FINISHED;
+                    }
+                })
+                .build();
+    }
+
+
+    @Bean
+    public Step step5(){
+        return stepBuilderFactory.get("step5")
+                .tasklet(new Tasklet() {
+                    @Override
+                    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+                        System.out.println("==============step5 executed=============");
                         return RepeatStatus.FINISHED;
                     }
                 })
