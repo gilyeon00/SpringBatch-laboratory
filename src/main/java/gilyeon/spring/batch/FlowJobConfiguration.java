@@ -9,6 +9,7 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.flow.Flow;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
@@ -27,15 +28,20 @@ public class FlowJobConfiguration {
     public Job flowJob(){
         return jobBuilderFactory.get("myFlowJob")
                 .start(myFlow1())
-                .on("COMPLETED").to(myFlow2())
+                    .on("*")
+                    .to(step5())
+                .from(myFlow1())
+                    .on("COMPLETED")
+                    .to(myFlow3())
                 .next(step3())
                 .end()
+                .incrementer(new RunIdIncrementer())
                 .build();
     }
 
     @Bean
     public Flow myFlow1(){
-        FlowBuilder<Flow> flowBuilder = new FlowBuilder<>("myFlow");
+        FlowBuilder<Flow> flowBuilder = new FlowBuilder<>("myFlow1");
         flowBuilder.start(step1())
                 .next(step2())
                 .end();
@@ -46,7 +52,7 @@ public class FlowJobConfiguration {
     @Bean
     public Flow myFlow2(){
         FlowBuilder<Flow> flowBuilder = new FlowBuilder<>("myFlow2");
-        flowBuilder.start(myFlow3())
+        flowBuilder.start(myFlow1())
                 .next(step5())
                 .end();
 
@@ -55,7 +61,7 @@ public class FlowJobConfiguration {
 
     @Bean
     public Flow myFlow3(){
-        FlowBuilder<Flow> flowBuilder = new FlowBuilder<>("myFlow2");
+        FlowBuilder<Flow> flowBuilder = new FlowBuilder<>("myFlow3");
         flowBuilder.start(step3())
                 .next(step4())
                 .end();
@@ -72,7 +78,7 @@ public class FlowJobConfiguration {
                     @Override
                     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
                         System.out.println("==============step1 executed=============");
-                        contribution.setExitStatus(ExitStatus.FAILED);
+//                        contribution.setExitStatus(ExitStatus.FAILED);
                         return RepeatStatus.FINISHED;
                     }
                 })
