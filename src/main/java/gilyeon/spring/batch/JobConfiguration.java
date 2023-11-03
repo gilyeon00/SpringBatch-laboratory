@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.FlowBuilder;
+import org.springframework.batch.core.job.flow.Flow;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.step.job.DefaultJobParametersExtractor;
@@ -24,28 +26,29 @@ public class JobConfiguration {
 
 
     @Bean
-    public Job exitStatusExampleJob() {
-        return jobBuilderFactory.get("exitStatusExampleJob")
-                .start(step1())
-                    .on("FAILED")
-                    .to(step2())
-                    .on("PASS")
-                    .stop()
-                .end()
+    public Job flowStepJob() {
+        return jobBuilderFactory.get("flowStepJob")
+                .start(flowStep())
+                .next(step3())
                 .incrementer(new RunIdIncrementer())
                 .build();
     }
 
 
     @Bean
-    public Step step1() {
-        return stepBuilderFactory.get("step1")
-                .tasklet(((contribution, chunkContext) -> {
-                    System.out.println(">>>> step1 executed");
-                    contribution.getStepExecution().setExitStatus(ExitStatus.FAILED);
-                    return RepeatStatus.FINISHED;
-                }))
+    public Step flowStep() {
+        return stepBuilderFactory.get("flowStep")
+                .flow(myflow())
                 .build();
+    }
+
+    @Bean
+    public Flow myflow() {
+        FlowBuilder<Flow> flowBuilder = new FlowBuilder<>("myflow");
+        flowBuilder
+                .start(step2())
+                .end();
+        return flowBuilder.build();
     }
 
     @Bean
@@ -53,9 +56,18 @@ public class JobConfiguration {
         return stepBuilderFactory.get("step2")
                 .tasklet(((contribution, chunkContext) -> {
                     System.out.println(">>>> step2 executed");
-                    return  RepeatStatus.FINISHED;
+                    return RepeatStatus.FINISHED;
                 }))
-                .listener(new PassCheckListener())
+                .build();
+    }
+
+    @Bean
+    public Step step3() {
+        return stepBuilderFactory.get("ste32")
+                .tasklet(((contribution, chunkContext) -> {
+                    System.out.println(">>>> step3 executed");
+                    return RepeatStatus.FINISHED;
+                }))
                 .build();
     }
 
