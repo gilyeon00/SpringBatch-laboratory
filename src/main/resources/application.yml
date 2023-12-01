@@ -11,3 +11,6 @@ spring:
       enabled: true
     jdbc:
       initialize-schema: always
+  jpa:
+    hibernate:
+      ddl-auto: create
