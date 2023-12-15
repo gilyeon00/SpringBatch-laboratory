@@ -1,6 +1,5 @@
 package gilyeon.spring.batch;
 
-import gilyeon.spring.batch.entity.Customer;
 import gilyeon.spring.batch.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.*;
@@ -11,16 +10,12 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.*;
 import org.springframework.batch.item.database.builder.JpaCursorItemReaderBuilder;
-import org.springframework.batch.item.support.ListItemReader;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.persistence.Basic;
 import javax.persistence.EntityManagerFactory;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 
 @Configuration
@@ -47,6 +42,7 @@ public class JobConfiguration {
                 .tasklet(new Tasklet() {
                     @Override
                     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+                        Member member = new Member();
                         return null;
                     }
                 })
@@ -59,7 +55,7 @@ public class JobConfiguration {
         return stepBuilderFactory.get("step2")
                 .<Member, Member>chunk(3)
                 .reader(jpaCursorItemReader())
-                .writer()
+                .writer(itemWriter())
                 .build();
     }
 
@@ -77,11 +73,12 @@ public class JobConfiguration {
     }
 
     @Bean
-    public ItemWriter<Member> itemWriter(List<Member> memberList) {
-        for(Member member : memberList){
-            System.out.println(member.toString());
-        }
-        return null;
+    public ItemWriter<Member> itemWriter() {
+        return items -> {
+            for(Member member : items){
+                System.out.println(member.toString());
+            }
+        };
     }
 
 
